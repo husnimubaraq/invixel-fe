@@ -1,4 +1,4 @@
-import { nameIdentifier } from "@/constants/Common"
+import { nameIdentifier } from "@/constants/common"
 
 export type TAuth = {
     iss: string

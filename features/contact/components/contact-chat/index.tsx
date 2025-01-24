@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { TProps } from "./type";
 import { ArrowLeft } from "lucide-react";
 import { Send, User } from "iconsax-react";
-import { nameIdentifier } from "@/constants/Common";
+import { nameIdentifier } from "@/constants/common";
 import { motion } from "framer-motion";
 import { cn } from "@/functions/utils";
 import { Input } from "@heroui/react";
@@ -62,7 +62,7 @@ export default function ContactChat(props: TProps){
                     <h2 className="font-semibold">Admin</h2>
                 </div>
             </div>
-            <div className="overflow-y-auto h-full max-h-[550px] p-4 space-y-4 flex flex-col justify-end  ">
+            <div className="overflow-y-auto flex-1 max-h-[550px] p-4 space-y-4  ">
                 {messages.map((message) => {
                     const isSelf = message.senderId === auth[nameIdentifier]
 

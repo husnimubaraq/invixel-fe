@@ -2,7 +2,6 @@
 
 import { LayoutWrapper, LayoutWrapperMobile } from "@/layouts/public/components/layout-wrapper";
 import HeroSection from "../hero-section";
-import { router } from "expo-router";
 import { SendHorizonal } from "lucide-react";
 import { useRef, useState } from "react";
 import { HttpTransportType, HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
@@ -13,7 +12,7 @@ import { formatFieldErrors } from '@/functions/utils';
 import { baseChatHubURL } from "@/apis";
 import { jwtDecode } from "jwt-decode";
 import { TAuth } from "@/types/auth";
-import { nameIdentifier } from "@/constants/Common";
+import { nameIdentifier } from "@/constants/common";
 import { TMessage } from "@/features/chat-message/types/conversation";
 import ContactChat from "../contact-chat";
 

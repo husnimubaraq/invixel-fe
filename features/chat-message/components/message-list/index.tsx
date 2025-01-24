@@ -7,7 +7,7 @@ import { Input } from "@heroui/react";
 import { cn } from "@/functions/utils";
 import { TMessage } from "../../types/conversation";
 import { TAuth } from "@/types/auth";
-import { nameIdentifier } from "@/constants/Common";
+import { nameIdentifier } from "@/constants/common";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -70,7 +70,7 @@ export default function MessageList(props: TProps) {
                 </div>
             </div>
 
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-end">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => {
                     const isSelf = message.senderId === auth[nameIdentifier]
 
