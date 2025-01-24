@@ -1,0 +1,23 @@
+trigger:
+  branches:
+    include:
+      - develop
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+variables:
+  - group: dev
+  - name: TAG
+    value: v.$(Build.BuildId)
+
+jobs:
+  - job: deploy
+    displayName: 'Deploy'
+    variables: 
+      - name: ACR_PREFIX
+        value: 'aidddo'
+      - name: FOLDERS
+        value: 'invixel-fe'
+    steps:
+      - template: deploy-templates.yml

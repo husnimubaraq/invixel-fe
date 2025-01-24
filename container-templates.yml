@@ -1,0 +1,29 @@
+parameters:
+  - name: DOCKERFILE
+    type: string
+  - name: IMAGE_NAME
+    type: string
+  - name: targetFolder
+    type: string
+
+steps:
+  - task: Bash@3
+    # condition: and(succeeded(), contains(variables['CHANGED_FOLDERS'], 'backend'), contains(variables['CHANGED_FOLDERS'], '${{ parameters.targetFolder }}'))
+    displayName: 'Build & Push ${{ parameters.IMAGE_NAME }}'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo 'Building Images $(ACR_LOGIN_SERVER)/$(ACR_PREFIX)/${{ parameters.IMAGE_NAME }}:$(TAG)...'
+        docker build --no-cache -t $(ACR_LOGIN_SERVER)/$(ACR_PREFIX)/${{ parameters.IMAGE_NAME }}:$(TAG) -f ${{ parameters.DOCKERFILE }} .
+        docker push $(ACR_LOGIN_SERVER)/$(ACR_PREFIX)/${{ parameters.IMAGE_NAME }}:$(TAG)
+        docker rmi $(ACR_LOGIN_SERVER)/$(ACR_PREFIX)/${{ parameters.IMAGE_NAME }}:$(TAG)
+        docker system prune -a --volumes -f
+        sleep 30
+        if [ -z "$(runningTask)" ]; then
+          # Set runningTask
+          echo "##vso[task.setvariable variable=runningTask;]${{ parameters.IMAGE_NAME }}"
+        else
+          # Append to runningTask
+          echo "##vso[task.setvariable variable=runningTask;]$(runningTask),${{ parameters.IMAGE_NAME }}"
+        fi
+        echo $(runningTask)

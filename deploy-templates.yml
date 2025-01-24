@@ -1,0 +1,48 @@
+steps:
+  ### Set checkout config
+  - checkout: self
+    clean: true
+    fetchDepth: 2
+
+  ### Detect all changed files and folders
+  - script: |
+      files=$(git diff --name-only HEAD~1 HEAD | paste -sd, -)
+      echo "##vso[task.setvariable variable=CHANGED_FOLDERS]$files"
+    displayName: 'Detect All Changes'
+
+  ### Step 1: Login to Azure and ACR
+  - task: AzureCLI@2
+    displayName: 'Login to Azure and Azure Container Registry'
+    inputs:
+      azureSubscription: $(SUBSCRIPTION)  # Replace with your service connection name
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        echo $(ACR_PASSWORD) | docker login -u $(ACR_USERNAME) $(ACR_LOGIN_SERVER) --password-stdin
+        echo 'Tag: $(TAG)'
+        echo 'Changes: $(CHANGED_FOLDERS)'
+
+  ### Step 2: Build and Push Images
+  - template: container-templates.yml
+    parameters:
+      DOCKERFILE: 'Dockerfile'
+      IMAGE_NAME: 'invixel-fe'
+      targetFolder: 'Dockerfile'
+
+  ### Step 3: Deploy Images to VM
+  - task: SSH@0
+    displayName: 'Deploy to VM'
+    condition: and(succeeded(), ne(variables['runningTask'], ''))
+    inputs:
+      sshEndpoint: 'Testing SSH'
+      runOptions: 'inline'
+      inline: |
+        echo 'SSH connection established!'  # Example command to execute
+        echo "Login to ACR..." 
+        echo $(ACR_PASSWORD) | docker login -u $(ACR_USERNAME) $(ACR_LOGIN_SERVER) --password-stdin 2>/dev/null
+        cd $(FOLDERS)
+        export TAGinvixelfe=$(TAG)
+        echo "Deploying $(runningTask):$(TAG)..."
+        docker compose pull --quiet && docker compose down && docker compose up -d
+        docker image prune -a -f
+      failOnStderr: false
