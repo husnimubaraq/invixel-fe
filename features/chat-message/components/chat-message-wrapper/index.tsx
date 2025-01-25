@@ -1,10 +1,10 @@
 "use dom"
 
 import React, { useEffect, useState } from "react";
-import { dataConversations } from "../../data/conversations";
-import { TConversation, TMessage } from "../../types/conversation";
+import { TConversation } from "../../types/conversation";
 import ConversationList from "../conversation-list";
 import MessageList from "../message-list";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 import "@/global.css"
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
@@ -12,8 +12,12 @@ import { HttpTransportType } from "@microsoft/signalr";
 import { baseChatHubURL } from "@/apis";
 import { jwtDecode } from "jwt-decode";
 import { TAuth } from "@/types/auth";
+import Lottie from "react-lottie";
 
-export default function ChatMessageWrapper({ token }: { token: string | null }) {
+export default function ChatMessageWrapper({ token, onLogout }: { 
+    token: string | null,
+    onLogout: () => void
+}) {
 
     const [connection, setConnection] = useState<HubConnection | null>(null)
 
@@ -22,6 +26,13 @@ export default function ChatMessageWrapper({ token }: { token: string | null }) 
     const [isMobileView, setIsMobileView] = useState(false);
 
     const [conversations, setConversations] = useState<TConversation[]>([])
+
+    const onDelete = () => {
+        if(connection && selectedChat){
+            connection.invoke("DeleteConversation", selectedChat.id, selectedChat.userId)
+            setSelectedChat(null)
+        }
+    }
 
     // Check for mobile view on mount and window resize
     useEffect(() => {
@@ -66,8 +77,6 @@ export default function ChatMessageWrapper({ token }: { token: string | null }) 
         }
     }, [connection])
 
-    console.log(conversations)
-
     return (
         <div className="h-screen bg-gray-50 w-full">
             <div className="mx-auto h-full">
@@ -80,7 +89,13 @@ export default function ChatMessageWrapper({ token }: { token: string | null }) 
                         <ConversationList 
                             conversations={conversations} 
                             selectedChat={selectedChat} 
-                            setSelectedChat={setSelectedChat}
+                            setSelectedChat={(chat) => {
+                                if(connection && chat){
+                                    setSelectedChat(null)
+                                    setSelectedChat(chat)
+                                }
+                            }}
+                            onLogout={onLogout}
                         />
                     </div>
 
@@ -98,6 +113,7 @@ export default function ChatMessageWrapper({ token }: { token: string | null }) 
                                 setSelectedChat={setSelectedChat} 
                                 setConversations={setConversations} 
                                 conversations={conversations} 
+                                onDelete={onDelete}
                             />
                         ) : (
                             <div className="h-full flex items-center justify-center text-gray-500">

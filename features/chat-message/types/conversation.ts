@@ -3,6 +3,7 @@ export type TConversation = {
     userName: string;
     message: string;
     createdAt: string;
+    updatedAt: string;
     userId: string;
 }
 

@@ -15,6 +15,7 @@ import { TAuth } from "@/types/auth";
 import { nameIdentifier } from "@/constants/common";
 import { TMessage } from "@/features/chat-message/types/conversation";
 import ContactChat from "../contact-chat";
+import dayjs from "dayjs";
 
 const createRegisterFormSchema = z.object({
     firstName: z.string().min(1, { message: "Please give first name." }),
@@ -83,9 +84,14 @@ export default function ContactWrapper({ token, isMobile, onRegister }: {
             
             connection.start().then(() => {
                 connection.on(`ReceiveConversations-${auth[nameIdentifier]}`, (messages: TMessage[]) => {
-                    console.log('ReceiveConversations: ', messages)
                     setConversationId(messages[0].conversationId)
                     setMessages(messages)
+                })
+
+                connection.on(`Disconnect-${auth[nameIdentifier]}`, () => {
+                    setConversationId("")
+                    setMessages([])
+                    setAuth(null)
                 })
             }).catch(error => {
                 console.log(error)
@@ -94,17 +100,21 @@ export default function ContactWrapper({ token, isMobile, onRegister }: {
     }, [connection])
 
     useEffect(() => {
-        if (conversationId && message) {
+        if (conversationId && message && auth) {
             resetForm()
+            setMessages(prev => [
+                ...prev,
+                {
+                    conversationId: conversationId,
+                    messageText: message,
+                    senderId: auth[nameIdentifier],
+                    createdAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    id: dayjs().toDate().toUTCString()
+                }
+            ])
             connection?.invoke("SendMessageToAdmin", conversationId, message)
         }
-    }, [conversationId])
-
-    useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-    }, [conversationId]);
+    }, [conversationId, auth])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()

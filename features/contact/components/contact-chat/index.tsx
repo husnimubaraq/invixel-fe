@@ -12,7 +12,7 @@ import { Input } from "@heroui/react";
 
 dayjs.extend(relativeTime)
 
-export default function ContactChat(props: TProps){
+export default function ContactChat(props: TProps) {
     const { connection, conversationId, auth, messages, setMessages } = props
 
     const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -21,13 +21,24 @@ export default function ContactChat(props: TProps){
     const handleSend = () => {
         if (!newMessage.trim() || !conversationId) return;
 
+        setMessages((prev) => [
+            ...prev,
+            {
+                conversationId: conversationId,
+                messageText: newMessage,
+                senderId: auth[nameIdentifier],
+                createdAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                id: dayjs().toDate().toUTCString()
+            }
+        ])
+
         connection.invoke("SendMessageToAdmin", conversationId, newMessage)
 
         setNewMessage("")
     };
 
     useEffect(() => {
-        if(connection){
+        if (connection) {
             connection.on(`ReceiveMessage-${conversationId}`, (message: TMessage) => {
                 console.log('ReceiveMessage: ', message)
                 setMessages((prev) => [
@@ -38,18 +49,18 @@ export default function ContactChat(props: TProps){
         }
     }, [connection])
 
-    // useEffect(() => {
-    //     if (chatContainerRef.current) {
-    //         chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    //     }
-    // }, [conversationId]);
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.lastElementChild?.scrollIntoView()
+        }
+    }, [messages]);
 
     return (
         <div className="flex flex-col bg-white shadow-md rounded-xl overflow-hidden relative">
             <div className="flex items-center p-4 bg-white border-b sticky top-0">
                 <button
                     onClick={() => {
-                        
+
                     }}
                     className="mr-4"
                 >
@@ -89,9 +100,7 @@ export default function ContactChat(props: TProps){
             <div className="p-4 bg-white border-t">
                 <div className="flex items-center space-x-2">
                     <div className="flex-1">
-                        <Input 
-                            type="text" 
-                            placeholder="Type a message..."
+                        <textarea
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={(e) => {
@@ -100,6 +109,9 @@ export default function ContactChat(props: TProps){
                                     handleSend();
                                 }
                             }}
+                            placeholder="Type a message..."
+                            className="w-full px-4 py-2 bg-gray-100 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-32"
+                            rows={1}
                         />
                     </div>
                     <motion.button

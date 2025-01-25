@@ -10,4 +10,5 @@ export type TProps = {
     conversations: TConversation[]
     connection: HubConnection
     auth: TAuth
+    onDelete: () => void
 }

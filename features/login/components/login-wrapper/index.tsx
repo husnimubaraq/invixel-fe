@@ -22,14 +22,15 @@ const createLoginFormSchema = z.object({
 
 
 export default function LoginWrapper({
-    onLogin
+    onLogin,
+    isPending
 }: {
-    onLogin: (data: TLoginRequest) => void
+    onLogin: (data: TLoginRequest) => void,
+    isPending: boolean
 }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -136,13 +137,13 @@ export default function LoginWrapper({
 
                     <motion.button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isPending}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`w-full py-3 bg-blue-600 text-white rounded-lg font-medium ${isLoading ? 'opacity-75 cursor-not-allowed' : 'hover:bg-blue-700'
+                        className={`w-full py-3 bg-blue-600 text-white rounded-lg font-medium ${isPending ? 'opacity-75 cursor-not-allowed' : 'hover:bg-blue-700'
                             }`}
                     >
-                        {isLoading ? (
+                        {isPending ? (
                             <motion.div
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}

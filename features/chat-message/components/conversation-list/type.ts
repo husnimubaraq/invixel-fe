@@ -4,4 +4,5 @@ export type TProps = {
     conversations: TConversation[]
     selectedChat: TConversation | null
     setSelectedChat: (chat: TConversation | null) => void
+    onLogout: () => void
 }

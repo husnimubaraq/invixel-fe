@@ -45,5 +45,5 @@ export default function LoginScreen() {
         return <Redirect href="/admin" />;
     }
 
-    return <LoginWrapper onLogin={onLogin} />
+    return <LoginWrapper isPending={isPending} onLogin={onLogin} />
 }
