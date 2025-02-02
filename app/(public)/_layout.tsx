@@ -1,5 +1,6 @@
 import SidebarMobile from "@/layouts/public/components/sidebar-mobile";
 import { Redirect, Slot, Stack } from "expo-router";
+import React from "react";
 import { ScrollView, StatusBar } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 

@@ -41,9 +41,9 @@ export default function Footer() {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-gray-500/80 mt-5 text-justify">
+                        {/* <p className="text-gray-500/80 mt-5 text-justify">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut accumsan orci at condimentum viverra. Mauris et ex massa. Phasellus pretium gravida erat, et hendrerit lacus efficitur et. Praesent quis ipsum metus.
-                        </p>
+                        </p> */}
                     </div>
                     <div className="">
                         <h5 className="text-sm font-semibold uppercase mb-3">Contact Us</h5>

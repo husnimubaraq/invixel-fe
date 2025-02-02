@@ -20,16 +20,22 @@ type Props = {
     setSelectedDate: (date: Date) => void;
     selectedTime: string;
     setSelectedTime: (time: string) => void;
+    selectedTimezone: string;
+    setSelectedTimeZone: (time: string) => void;
 }
 
-export default function Step1({ setStep, selectedDate, setSelectedDate, setSelectedTime }: Props) {
+export default function Step1({ setStep, selectedDate, setSelectedDate, setSelectedTime, selectedTimezone, setSelectedTimeZone }: Props) {
 
     const [currentDate, setCurrentDate] = useState(selectedDate);
 
     const timeSlots = [
-        "15:45", "16:15", "16:45", "17:15",
-        "17:45", "18:15", "18:45"
-    ];
+        "07:00", "07:30", "08:00", "08:30",
+        "09:00", "09:30", "10:00", "10:30",
+        "11:00", "11:30", "12:00", "12:30",
+        "13:00", "13:30", "14:00", "14:30",
+        "15:00", "15:30", "16:00", "16:30",
+        "17:00"
+    ];    
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -68,7 +74,10 @@ export default function Step1({ setStep, selectedDate, setSelectedDate, setSelec
                         <h2 className="text-base font-semibold">What time is it good?</h2>
                         <p className="text-sm text-gray-500">Displays the time for <span className="font-semibold">{dayjs(selectedDate).format("DD MMMM YYYY")}</span></p>
                     </div>
-                    <Select>
+                    <Select
+                        value={selectedTimezone}
+                        onValueChange={setSelectedTimeZone}
+                    >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a timezone" />
                         </SelectTrigger>
@@ -84,21 +93,23 @@ export default function Step1({ setStep, selectedDate, setSelectedDate, setSelec
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                    {timeSlots.map((time) => (
-                        <motion.button
-                            key={time}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="p-2 text-center border rounded-md hover:bg-blue-50"
-                            onClick={() => {
-                                setSelectedTime(time);
-                                setStep(2)
-                            }}
-                        >
-                            {time}
-                        </motion.button>
-                    ))}
+                <div className="mt-2 relative overflow-hidden h-[250px] overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-4 ">
+                        {timeSlots.map((time) => (
+                            <motion.button
+                                key={time}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="p-2 text-center border rounded-md hover:bg-blue-50"
+                                onClick={() => {
+                                    setSelectedTime(time);
+                                    setStep(2)
+                                }}
+                            >
+                                {time}
+                            </motion.button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,24 +1,45 @@
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { MapPin } from "lucide-react";
-import { useState } from "react";
+import { Loader2, MapPin } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { TCreateBooking } from "../../types/schedule";
+import { z } from "zod";
+import { cn, formatFieldErrors } from "@/functions/utils";
 
-const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-];
+
+const createFormSchema = z.object({
+    firstName: z.string().min(1, {
+        message: "First Name should not be empty.",
+    }),
+    lastName: z.string().min(1, {
+        message: "Last Name should not be empty.",
+    }),
+    email: z.string().min(1, {
+        message: "Email should not be empty.",
+    }),
+    title: z.string().min(1, {
+        message: "Title should not be empty.",
+    }),
+    description: z.string().optional(),
+    additionalInformation: z.string().optional(),
+});
+
 
 type Props = {
     setStep: (step: number) => void;
     selectedDate: Date;
     selectedTime: string;
+    selectedTimezone: string;
     setSelectedDate: (date: Date) => void;
+    onSubmit: (data: TCreateBooking) => void;
+    isPending?: boolean, 
 }
 
-export default function Step2({ setStep, selectedDate, setSelectedDate, selectedTime }: Props) {
+export default function Step2({ setStep, selectedDate, selectedTimezone, selectedTime, onSubmit, isPending }: Props) {
     const [email, setEmail] = useState('');
     const [guests, setGuests] = useState<string[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
     const maxGuests = 10;
 
     const handleAddGuest = () => {
@@ -31,6 +52,30 @@ export default function Step2({ setStep, selectedDate, setSelectedDate, selected
     const removeGuest = (indexToRemove: number) => {
         setGuests(guests.filter((_, index) => index !== indexToRemove));
     };
+
+    const handeSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+
+        const entries = Object.fromEntries(new FormData(e.currentTarget).entries())
+
+        const data = createFormSchema.safeParse(entries);
+
+        if (!data.success) {
+            let fieldErrors = formatFieldErrors(data.error.formErrors.fieldErrors);
+            setFieldErrors(fieldErrors);
+            return;
+        }
+
+        onSubmit({
+            ...data.data,
+            timezone: selectedTimezone,
+            startDate: dayjs(selectedDate).format('YYYY-MM-DD'),
+            startTime: selectedTime,
+            attendees: guests,
+            description: data.data.description ?? "",
+            additionalInformation: data.data.additionalInformation ?? "",
+        })
+    }
 
     return (
         <motion.div
@@ -51,31 +96,48 @@ export default function Step2({ setStep, selectedDate, setSelectedDate, selected
                 </div>
             </div>
 
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handeSubmit}>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">First Name *</label>
-                        <input type="text" className="mt-1 w-full p-2 border rounded-md" />
+                        <input type="text" name="firstName" className="mt-1 w-full p-2 border rounded-md" />
+                        {fieldErrors.firstName && (
+                            <p className="text-sm text-red-500">{fieldErrors.firstName}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Last Name *</label>
-                        <input type="text" className="mt-1 w-full p-2 border rounded-md" />
+                        <input type="text" name="lastName" className="mt-1 w-full p-2 border rounded-md" />
+                        {fieldErrors.lastName && (
+                            <p className="text-sm text-red-500">{fieldErrors.lastName}</p>
+                        )}
                     </div>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Your Email *</label>
-                    <input type="email" className="mt-1 w-full p-2 border rounded-md" />
+                    <input type="email" name="email" className="mt-1 w-full p-2 border rounded-md" />
+                    {fieldErrors.email && (
+                        <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                    )}
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Title *</label>
-                    <input type="text" className="mt-1 w-full p-2 border rounded-md" />
+                    <input type="text" name="title" className="mt-1 w-full p-2 border rounded-md" />
+                    {fieldErrors.title && (
+                        <p className="text-sm text-red-500">{fieldErrors.title}</p>
+                    )}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Tell us a little about your project: *</label>
-                    <textarea className="mt-1 w-full p-2 border rounded-md h-24"></textarea>
+                    <label className="block text-sm font-medium text-gray-700">Tell us a little about your project:</label>
+                    <textarea className="mt-1 w-full p-2 border rounded-md h-24" name="description"></textarea>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Additional Information:</label>
+                    <textarea className="mt-1 w-full p-2 border rounded-md h-24" name="additionalInformation"></textarea>
                 </div>
 
                 <div className="mb-6">
@@ -138,8 +200,15 @@ export default function Step2({ setStep, selectedDate, setSelectedDate, selected
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        className={cn(
+                            "px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2",
+                            isPending && "bg-blue-500/50"
+                        )}
+                        disabled={isPending}
                     >
+                        {isPending && (
+                            <Loader2 className="animate-spin" color="white" />
+                        )}
                         Confirmation
                     </button>
                 </div>

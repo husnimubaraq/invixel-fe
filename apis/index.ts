@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 
 export const baseChatHubURL = `http://localhost:5156/chathub`
+export const baseScheduleURL = process.env.EXPO_PUBLIC_API_URL
 
 const baseURL = `http://localhost:5156/api`
 
