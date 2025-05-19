@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -9,7 +9,7 @@ import "expo-router/entry"
 SplashScreen.preventAutoHideAsync();
 
 import "@/global.css"
-import { StatusBar } from 'react-native';
+import { ScrollView, StatusBar } from 'react-native';
 import { SessionProvider } from '@/contexts/auth-context';
 import Provider from './provider';
 
@@ -29,16 +29,10 @@ export default function RootLayout() {
   }
 
   return (
-    <SessionProvider>
+    <ScrollView automaticallyAdjustsScrollIndicatorInsets contentInsetAdjustmentBehavior='automatic'>
       <Provider>
-        <Stack
-          initialRouteName='(public)'
-        >
-          <Stack.Screen name="(public)" options={{ headerShown: false }} />
-          <Stack.Screen name="admin" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar backgroundColor='white' barStyle='dark-content' />
+        <Slot />
       </Provider>
-    </SessionProvider>
-  );
+    </ScrollView>
+  )
 }

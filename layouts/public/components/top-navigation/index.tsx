@@ -66,7 +66,7 @@ export default function TopNavigation() {
                                 </div>
                             ))}
                             <div className="hidden lg:flex items-center ms-3">
-                                <Link href="/(public)/schedule" className="bg-primary text-white px-4 py-2 rounded inline-flex items-center text-sm">
+                                <Link href="/schedule" className="bg-primary text-white px-4 py-2 rounded inline-flex items-center text-sm">
                                     Schedule a call
                                     <Video color="white" className="w-4 h-4 ml-2" />
                                 </Link>

@@ -11,16 +11,14 @@ import ScheduleSection from '../schedule-section';
 
 export default function HomeWrapper({ isMobile }: { isMobile?: boolean }) {
 
-    const ComponentWrapper = isMobile ? LayoutWrapperMobile : LayoutWrapper;
-
     return (
-        <ComponentWrapper>
+        <LayoutWrapper>
             <HeroSection />
             <AboutSection />
             <ServiceSection />
             <ClientSection />
             <ContactSection />
             <ScheduleSection />
-        </ComponentWrapper>
+        </LayoutWrapper>
     )
 }

@@ -41,7 +41,7 @@ export default function ScheduleSection() {
                     <motion.button
                         variants={buttonVariants}
                     >
-                        <Link href="/(public)/schedule" className="bg-blue-500 text-white font-medium py-4 px-6 rounded-full hover:bg-blue-400 transition-colors">
+                        <Link href="/schedule" className="bg-blue-500 text-white font-medium py-4 px-6 rounded-full hover:bg-blue-400 transition-colors">
                             Schedule a free call
                         </Link>
                     </motion.button>

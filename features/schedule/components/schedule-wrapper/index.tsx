@@ -8,28 +8,41 @@ import Step2 from "../step-2";
 import { TCreateBooking } from "../../types/schedule";
 import Step3 from "../step-3";
 import { cn } from "@/functions/utils";
+import { useMutation } from "@tanstack/react-query";
+import { createBookingRequest } from "../../apis/schedule";
+import { toast } from "sonner";
 
-export default function ScheduleWrapper(
-    { isMobile, onSubmit, isPending, step, setStep }:
-        {
-            isMobile?: boolean,
-            isPending?: boolean,
-            step: number;
-            setStep: (step: number) => void
-            onSubmit: (data: TCreateBooking) => void
+export default function ScheduleWrapper() {
+
+    const [step, setStep] = useState(1);
+
+    const { mutate, isPending } = useMutation({
+        mutationFn: (request: TCreateBooking) => createBookingRequest(request),
+        onSuccess: (response) => {
+        if (response.status === 201) {
+            setStep(3)
+        } else {
+            let message = response.data.message
+
+            if (typeof response.data.message === 'object')
+            message = response.data.message.join('\n')
+            toast.error(message)
         }
-) {
+        },
+    })
+
+    const onSubmit = (data: TCreateBooking) => {
+        mutate(data)
+    }
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [selectedTime, setSelectedTime] = useState<string>('');
     const [selectedTimezone, setSelectedTimeZone] = useState<string>("Asia/Jakarta");
 
-    const ComponentWrapper = isMobile ? LayoutWrapperMobile : LayoutWrapper;
-
     const isStep3 = step == 3
 
     return (
-        <ComponentWrapper>
+        <LayoutWrapper>
             <HeroSection />
             <div className={cn(!isStep3 && "max-w-4xl mx-0 lg:mx-auto my-10")}>
                 <motion.div
@@ -69,6 +82,6 @@ export default function ScheduleWrapper(
                     )}
                 </motion.div>
             </div>
-        </ComponentWrapper>
+        </LayoutWrapper>
     )
 }

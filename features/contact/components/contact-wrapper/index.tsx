@@ -3,19 +3,9 @@
 import { LayoutWrapper, LayoutWrapperMobile } from "@/layouts/public/components/layout-wrapper";
 import HeroSection from "../hero-section";
 import { SendHorizonal } from "lucide-react";
-import { useRef, useState } from "react";
-import { HttpTransportType, HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
-import { useEffect } from "react";
-import { TRegisterRequest } from "../../types/register";
 import { z } from "zod";
 import { formatFieldErrors } from '@/functions/utils';
-import { baseChatHubURL } from "@/apis";
-import { jwtDecode } from "jwt-decode";
-import { TAuth } from "@/types/auth";
-import { nameIdentifier } from "@/constants/common";
-import { TMessage } from "@/features/chat-message/types/conversation";
-import ContactChat from "../contact-chat";
-import dayjs from "dayjs";
+import { useState } from "react";
 
 const createRegisterFormSchema = z.object({
     firstName: z.string().min(1, { message: "Please give first name." }),
@@ -28,93 +18,13 @@ const createRegisterFormSchema = z.object({
     }),
 });
 
-export default function ContactWrapper({ token, isMobile, onRegister }: {
-    token: string | null,
-    isMobile?: boolean,
-    onRegister: (data: TRegisterRequest) => void
-}) {
-
-    const ComponentWrapper = isMobile ? LayoutWrapperMobile : LayoutWrapper;
-
-    const [connection, setConnection] = useState<HubConnection | null>(null)
-
-    const chatContainerRef = useRef<HTMLDivElement>(null);
-
-    const [auth, setAuth] = useState<TAuth | null>(null)
+export default function ContactWrapper() {
     const [firstName, setFirstName] = useState<string>("")
     const [lastName, setLastName] = useState<string>("")
     const [email, setEmail] = useState<string>("")
     const [message, setMessage] = useState<string>("")
-    const [conversationId, setConversationId] = useState<string>("")
-    const [messages, setMessages] = useState<TMessage[]>([])
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-    const resetForm = () => {
-        setLastName("")
-        setFirstName("")
-        setEmail("")
-        setMessage("")
-    }
-
-    useEffect(() => {
-        if (token) {
-            const user = jwtDecode(token ?? '', 
-            {
-                header: false,
-            }) as TAuth;
-
-            setAuth(user)
-
-            const connection = new HubConnectionBuilder()
-                .withUrl(`${baseChatHubURL}`, {
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets,
-                    accessTokenFactory: () => token
-                })
-                .withAutomaticReconnect()
-                .build()
-            
-            setConnection(connection)
-        }
-    }, [token])
-
-    useEffect(() => {
-        if (connection && auth) {
-            
-            connection.start().then(() => {
-                connection.on(`ReceiveConversations-${auth[nameIdentifier]}`, (messages: TMessage[]) => {
-                    setConversationId(messages[0].conversationId)
-                    setMessages(messages)
-                })
-
-                connection.on(`Disconnect-${auth[nameIdentifier]}`, () => {
-                    setConversationId("")
-                    setMessages([])
-                    setAuth(null)
-                })
-            }).catch(error => {
-                console.log(error)
-            })
-        }
-    }, [connection])
-
-    useEffect(() => {
-        if (conversationId && message && auth) {
-            resetForm()
-            setMessages(prev => [
-                ...prev,
-                {
-                    conversationId: conversationId,
-                    messageText: message,
-                    senderId: auth[nameIdentifier],
-                    createdAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-                    id: dayjs().toDate().toUTCString()
-                }
-            ])
-            connection?.invoke("SendMessageToAdmin", conversationId, message)
-        }
-    }, [conversationId, auth])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -130,12 +40,10 @@ export default function ContactWrapper({ token, isMobile, onRegister }: {
             return;
         }
 
-        onRegister(data.data)
-
     };
 
     return (
-        <ComponentWrapper>
+        <LayoutWrapper>
             <HeroSection />
             <section className="lg:py-24 py-6 relative">
                 <div className="container mx-auto px-4 md:px-0">
@@ -145,70 +53,60 @@ export default function ContactWrapper({ token, isMobile, onRegister }: {
                                 <div className="pb-12">
                                     <h2 className="mb-4 text-2xl/6 mt-0 font-medium">Let's Talk Further</h2>
                                     <p className="mb-12 text-base/6">Please fill out the following form and we will get back to you shortly</p>
-                                    {(messages.length > 0 && connection && auth) ? (
-                                        <ContactChat
-                                            auth={auth}
-                                            connection={connection}
-                                            messages={messages}
-                                            setMessages={setMessages}
-                                            conversationId={conversationId}
-                                        />
-                                    ) : (
-                                        <form
-                                            onSubmit={handleSubmit}
+                                    <form
+                                        onSubmit={handleSubmit}
+                                    >
+                                        <div className="flex gap-6">
+                                            <div className="md:w-1/2">
+                                                <div className="mb-5">
+                                                    <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">First Name</label>
+                                                    <div className="relative w-full">
+                                                        <input type="text" placeholder="Your first name" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} id="fname" className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
+                                                    </div>
+                                                    {fieldErrors.firstName && (
+                                                        <p className="text-red-500 text-sm mt-1">{fieldErrors.firstName}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="md:w-1/2">
+                                                <div className="mb-5">
+                                                    <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Last Name</label>
+                                                    <div className="relative w-full">
+                                                        <input type="text" placeholder="Your last name" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} id="lname" className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
+                                                    </div>
+                                                    {fieldErrors.lastName && (
+                                                        <p className="text-red-500 text-sm mt-1">{fieldErrors.lastName}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="w-full">
+                                            <div className="mb-5">
+                                                <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Email</label>
+                                                <div className="relative w-full">
+                                                    <input type="text" placeholder="Your email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
+                                                </div>
+                                                {fieldErrors.email && (
+                                                    <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                                                )}
+                                            </div>
+                                            <div className="mb-5">
+                                                <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Message</label>
+                                                <div className="relative w-full">
+                                                    <textarea placeholder="Type your message here..." name="message" value={message} onChange={(e) => setMessage(e.target.value)} className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" rows={5} />
+                                                </div>
+                                                {fieldErrors.message && (
+                                                    <p className="text-red-500 text-sm mt-1">{fieldErrors.message}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="inline-flex items-center gap-2 text-sm bg-primary text-white font-medium leading-6 text-center align-middle select-none py-2 px-4 rounded-md transition-all hover:shadow-lg hover:shadow-primary/80"
                                         >
-                                            <div className="flex gap-6">
-                                                <div className="md:w-1/2">
-                                                    <div className="mb-5">
-                                                        <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">First Name</label>
-                                                        <div className="relative w-full">
-                                                            <input type="text" placeholder="Your first name" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} id="fname" className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
-                                                        </div>
-                                                        {fieldErrors.firstName && (
-                                                            <p className="text-red-500 text-sm mt-1">{fieldErrors.firstName}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="md:w-1/2">
-                                                    <div className="mb-5">
-                                                        <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Last Name</label>
-                                                        <div className="relative w-full">
-                                                            <input type="text" placeholder="Your last name" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} id="lname" className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
-                                                        </div>
-                                                        {fieldErrors.lastName && (
-                                                            <p className="text-red-500 text-sm mt-1">{fieldErrors.lastName}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="w-full">
-                                                <div className="mb-5">
-                                                    <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Email</label>
-                                                    <div className="relative w-full">
-                                                        <input type="text" placeholder="Your email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" />
-                                                    </div>
-                                                    {fieldErrors.email && (
-                                                        <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
-                                                    )}
-                                                </div>
-                                                <div className="mb-5">
-                                                    <label className="block text-sm font-medium mb-1 text-gray-600" htmlFor="fname">Message</label>
-                                                    <div className="relative w-full">
-                                                        <textarea placeholder="Type your message here..." name="message" value={message} onChange={(e) => setMessage(e.target.value)} className="w-full text-gray-700 border border-slate-200 rounded py-3 px-4 leading-tight focus:outline-none" rows={5} />
-                                                    </div>
-                                                    {fieldErrors.message && (
-                                                        <p className="text-red-500 text-sm mt-1">{fieldErrors.message}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <button
-                                                type="submit"
-                                                className="inline-flex items-center gap-2 text-sm bg-primary text-white font-medium leading-6 text-center align-middle select-none py-2 px-4 rounded-md transition-all hover:shadow-lg hover:shadow-primary/80"
-                                            >
-                                                Send <SendHorizonal className="w-4 h-4 ml-1" color="white" />
-                                            </button>
-                                        </form>
-                                    )}
+                                            Send <SendHorizonal className="w-4 h-4 ml-1" color="white" />
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -268,6 +166,6 @@ export default function ContactWrapper({ token, isMobile, onRegister }: {
                     </div>
                 </div>
             </section>
-        </ComponentWrapper>
+        </LayoutWrapper>
     )
 }

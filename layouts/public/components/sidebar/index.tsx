@@ -112,7 +112,7 @@ export default function Sidebar() {
                     ))}
                 </div>
                 <div className="px-4 py-4 flex justify-between items-center border-t">
-                    <Link href="/(public)/schedule" className="bg-primary text-white px-4 py-3 rounded inline-flex items-center text-lg w-full justify-center">
+                    <Link href="/schedule" className="bg-primary text-white px-4 py-3 rounded inline-flex items-center text-lg w-full justify-center">
                         Schedule a call
                         <Video color="white" className="w-6 h-6 ml-2" />
                     </Link>

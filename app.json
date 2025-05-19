@@ -19,6 +19,7 @@
     },
     "web": {
       "bundler": "metro",
+      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -32,11 +33,11 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactServerFunctions": true
+      "typedRoutes": true
     }
   }
 }
